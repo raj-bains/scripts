@@ -1,0 +1,16 @@
+#!/bin/sh
+
+source $HOME/hive_env.sh
+
+DEBUG=1
+
+export HIVE_CONF_DIR=$HOME/bin
+LOG_DIR=/tmp/rbains/hs2
+mkdir -p $LOG_DIR
+HIVESERVER=`which hiveserver2`
+if [ $DEBUG = 1 ]; then
+	nohup $HIVESERVER -hiveconf hive.metastore.uris=\" \" -hiveconf hive.root.logger=DEBUG,DRFA > $LOG_DIR/hiveServer2.out 2>$LOG_DIR/hiveServer2.log &
+else
+	nohup $HIVESERVER -hiveconf hive.metastore.uris=\" \" > $LOG_DIR/hiveServer2.out 2>$LOG_DIR/hiveServer2.log &
+fi
+sleep 5

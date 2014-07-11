@@ -1,0 +1,3 @@
+#!/bin/sh
+
+kill `/usr/sbin/lsof | grep ndmp | tr -s ' ' | cut -f2 -d' ' | head -1`
