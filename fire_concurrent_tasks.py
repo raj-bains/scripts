@@ -14,6 +14,8 @@ prepend_cmd = '''set hive.execution.engine=tez;
               '''
 batch_files=['query28.sql','query32','query50','query88']
 
+connect = 'jdbc:hive2://cn041:10000'
+database = 'tpcds_bin_partitioned_orc_200'
 DEBUG=1
 
 # utilities, no business logic    
@@ -156,8 +158,6 @@ def parseLogs(logs):
 
 def fireCommands(n_users, files, outFiles, batchFiles):
     driver = 'org.apache.hive.jdbc.HiveDriver'
-    connect = 'jdbc:hive2://cn041:10000'
-    database = 'tpcds4_bin_partitioned_orc_200'
     theThreads = [ ]
 
     # Fire in parallel threads

@@ -50,20 +50,19 @@ def runCmd(rcmd):
 
 # Copy file multiple times into one file
 
-def creatLargeFiles(n_users, ifile):
+def createLargeFiles(n_users, ifile):
     a = [ ]
-    # Write header to every file (not append)
-    onetime = "echo \"{0}\" > {1}".format(prepend_cmd, out_file)
-    runCmd(onetime)
     for f in range(n_users):
         out_file =  "{0}/{1}_{2}_{3}.sql".format(tmp_dir, out_file_name, 'heavy', f)
+        onetime = "echo \"{0}\" > {1}".format(prepend_cmd, out_file)
+        runCmd(onetime)
         a.append(out_file)
         for i in range(5):
             cmd = "cat {0}/{1} >> {2}".format('.', ifile, out_file)
             runCmd(cmd)
     return a
 
-def createLargeOut(n_users)
+def createLargeOut(n_users):
     a = [ ]
     tt = getTimeStamp()
     for f in range(n_users):
@@ -106,8 +105,8 @@ def outFileNames(n_users, tmp_dir):
 
 ################
 
-def getBeelineCmd(infile, outfile, user)
-    command = 'beeline -d {0} -n {5} -u {1}/{2} -f {3} >& {4}'.format(driver, connect, database, infile, outfiles, user)
+def getBeelineCmd(infile, outfile, user):
+    command = 'beeline -d {0} -n {5} -u {1}/{2} -f {3} >& {4}'.format(driver, connect, database, infile, outfile, user)
     return command        
 # Fire commands in parallel
 
@@ -123,11 +122,11 @@ def fireCommands(n_users, files, outFiles, bigFiles, bigOutFiles, batchFirst):
     #command = 'hive --service cli -f {0} >& {1}'.format(bfile, boutFile)
 
     # Fire bigger interactive jobs
-    if batchFirst = 1:
+    if batchFirst == 1:
         for x in range(n_users):
             user = 'user{0}'.format(i)
             i = i + 1
-            command = getBeelineCmd(bugFiles[x], bigOutFiles[x], user)
+            command = getBeelineCmd(bigFiles[x], bigOutFiles[x], user)
             tt = PopenThread(command) 
         tt.start() 
         theThreads.append(tt)
@@ -148,7 +147,7 @@ def fireCommands(n_users, files, outFiles, bigFiles, bigOutFiles, batchFirst):
     i = 1
     
     # Fire bigger interactive jobs
-    if batchFirst = 0:
+    if batchFirst == 0:
         # Give a headstart
         time.sleep(5)
         for x in range(n_users):
@@ -184,11 +183,11 @@ def main():
       ofiles = outFileNames(arg_users, tmp_dir)
 
       # create temporary files for other half, these are larger queries
-      batchFiles = createBatchFiles(arg_users)
-      obatch = createLargeOut(n_users)
+      batchFiles = createLargeFiles(arg_users, arg_lf)
+      obatch = createLargeOut(arg_users)
 
       # run both sets together
-      fireCommands(arg_users, files, batchFiles, obatch, 1)
+      fireCommands(arg_users, files, ofiles, batchFiles, obatch, 1)
 
       # Parse the logs produced
       times = parseLogs(ofiles)
