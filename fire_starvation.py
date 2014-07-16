@@ -162,7 +162,66 @@ def fireCommands(n_users, files, outFiles, bigFiles, bigOutFiles, batchFirst):
         tt.join()
     time.sleep( 500 )
 
+################
 
+# Parse the logs
+
+def statLogs(times):
+    sums = [ ]
+    avgs = [ ]
+    allValues = [ ]
+    bigSum = 0
+    
+    for lTimes in times:
+        sum = 0
+        i = 0
+
+        for value in lTimes:
+            allValues.append(value)
+            sum = sum + value
+            i = i + 1
+
+        sums.append(sum)
+        avgs.append(sum/i)
+        bigSum = bigSum + sum
+
+    nQueries = len(allValues)
+    nUsers = len(sums)
+    average_time = bigSum / nQueries
+    allValues.sort()
+    cnt = nQueries
+    print "Number of users {0}".format(nUsers)
+    print "Queries fired {0}, per user {1}".format(nQueries, int(nQueries/nUsers))
+    print "User latency: Max {0:.2f} Min {1:.2f}".format(max(sums), min(sums))
+    print "All Queries: Max {0:.2f} Min {1:.2f}".format(allValues[cnt-1], allValues[0])
+    print "All Queries: 90th percentile {0:.2f}".format(allValues[int(cnt*0.90)])
+    print "All Queries: 50th percentile {0:.2f}".format(allValues[int(cnt*0.5)])
+    print "All Queries: 10th percentile {0:.2f}".format(allValues[int(cnt*0.1)])
+    print "All Queries: Average {0:.2f}".format(average_time)
+
+
+def parseLogs(logs, pattern):
+    times = [ ]
+    
+    for log in logs:
+        file = open(log, 'r')
+        lTimes = [ ]
+        
+        if pattern == 1:
+            p = "100 rows selected ("
+            n = 19
+        else if pattern == 2:
+            p =  "1 row selected ("
+            n = 16
+        
+        for line in file:
+            if line[:n] == p:
+                a = len(line)-9
+                num = line[n:a]
+                value = float(num)
+                lTimes.append(value)
+        times.append(lTimes)        
+    return times
 
 ################
 
@@ -186,20 +245,22 @@ def main():
       batchFiles = createLargeFiles(arg_users, arg_lf)
       obatch = createLargeOut(arg_users)
 
-      # run both sets together
-      fireCommands(arg_users, files, ofiles, batchFiles, obatch, 1)
+      for i in range(2):
+            
+            print "BATCH_FIRST = {0}".format(i)
+            
+            # run both sets together
+            fireCommands(arg_users, files, ofiles, batchFiles, obatch, i)
 
-      # Parse the logs produced
-      times = parseLogs(ofiles)
-      statLogs(times)
+            # Parse the logs produced
+            print "Interactive Logs"
+            times = parseLogs(ofiles, 2)
+            statLogs(times)
 
-      # run both sets together
-      fireCommands(arg_users, files, batchFiles, obatch, 0)
-
-      # Parse the logs produced
-      times = parseLogs(ofiles)
-      statLogs(times)
-
+            print "Big Query Interactive Logs"
+            times = parseLogs(obatch, 1)
+            statLogs(times)
+      
 
 if __name__ == "__main__":
    main()
